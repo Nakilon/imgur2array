@@ -8,11 +8,13 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    json (2.1.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  json
   nethttputils!
 
 BUNDLED WITH
