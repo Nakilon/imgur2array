@@ -3,6 +3,6 @@ Gem::Specification.new do |spec|
   spec.summary = "converts any kind of imgur URL to array of fullsize image URLs"
   spec.author = "Victor Maslov aka Nakilon"
   spec.email = "nakilon@gmail.com"
-  spec.version = "0.0.0.1"
+  spec.version = "0.0.1.0"
   spec.require_path = "lib"
 end

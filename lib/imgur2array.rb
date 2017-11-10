@@ -52,7 +52,7 @@ module Imgur
     end.map do |_|
       case _["type"]
       when "image/jpeg", "image/png", "image/gif"
-        _["link"]
+        _.values_at "link", "width", "height"
       else
         raise Error.new "unknown type of #{_} for #{link}"
       end
@@ -61,9 +61,9 @@ module Imgur
 end
 
 if $0 == __FILE__
+  STDOUT.sync = true
   puts "self testing..."
 
-  # fail unless ["https://i.imgur.com/BLCesav.jpg"] == Imgur::imgur_to_array("https://imgur.com/a/Aoh6l")
   %w{
     https://imgur.com/a/badlinkpattern
     http://example.com/
@@ -76,6 +76,7 @@ if $0 == __FILE__
   end
 
   [
+    ["https://imgur.com/a/Aoh6l", "https://i.imgur.com/BLCesav.jpg", 1000, 1500],
     ["http://i.imgur.com/7xcxxkR.gifv", "http://i.imgur.com/7xcxxkRh.gif"], # gif
     ["http://imgur.com/HQHBBBD", "https://i.imgur.com/HQHBBBD.jpg"], # http
     ["https://imgur.com/BGDh6eu", "https://i.imgur.com/BGDh6eu.jpg"], # https
@@ -92,12 +93,17 @@ if $0 == __FILE__
     ["http://imgur.com/gallery/oZXfZ", 12, "https://i.imgur.com/t7RjRXU.jpg", "https://i.imgur.com/anlPrvS.jpg"],
   ].each do |url, n, first = nil, last = nil|
     real = Imgur::imgur_to_array url
-    unless last
-      fail [url, real.size, real].inspect unless real == Array(n)
-    else
+    case last
+    when NilClass
+      fail [url, real].inspect unless real.size == 1 && real.first.first == n
+    when Numeric
+      fail [url, real].inspect unless real.size == 1 && real.first == [n, first, last]
+    when String
       fail [url, real.size].inspect unless real.size == n
-      fail [url, real.first].inspect unless real.first == first
-      fail [url, real.last].inspect unless real.last == last
+      fail [url, real.first].inspect unless real.first.first == first
+      fail [url, real.last].inspect unless real.last.first == last
+    else
+      fail
     end
   end
 
