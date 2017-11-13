@@ -42,9 +42,9 @@ module Imgur
         fail data_imgur.inspect
       end
     when /\/\/i\./,
-         /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{7}(\?r|\.jpg|\.gifv)?\z/
+         /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{7}(\?r|\/new|\.jpg|\.gifv)?\z/
       json = NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
-        link[/(?<=\/)[a-zA-Z0-9]{7}(?=[^\/]*\z)/]
+        link[/(?<=\/)[a-zA-Z0-9]{7}(?=(\?r|\/new|\.jpg|\.gifv)?\z)/]
       }/0.json",
         header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
       [ JSON.load(json)["data"] ]
@@ -80,6 +80,7 @@ if $0 == __FILE__
     ["https://imgur.com/a/Aoh6l", "https://i.imgur.com/BLCesav.jpg", 1000, 1500, "image/jpeg"],
     ["http://i.imgur.com/7xcxxkR.gifv", "http://i.imgur.com/7xcxxkRh.gif", 718, 404, "image/gif"],
     ["https://imgur.com/9yaMdJq", "https://i.imgur.com/9yaMdJq.mp4", 720, 404, "video/mp4"],
+    ["http://imgur.com/gallery/dCQprEq/new", "https://i.imgur.com/dCQprEq.jpg"],
     ["http://imgur.com/HQHBBBD", "https://i.imgur.com/HQHBBBD.jpg"], # http
     ["https://imgur.com/BGDh6eu", "https://i.imgur.com/BGDh6eu.jpg"], # https
     ["https://imgur.com/a/qNCOo", 6, "https://i.imgur.com/vwqfi3s.jpg", "https://i.imgur.com/CnSMWvo.jpg"], # https album
