@@ -8,7 +8,7 @@ module Imgur
 
   class Error < RuntimeError
     def initialize body
-      Module.nesting[1].logger.error body
+      Module.nesting[1].logger.error "Imgur error: #{body}"
       super "Imgur error: #{body}"
     end
   end
@@ -38,6 +38,7 @@ module Imgur
       # elsif data_imgur["comment"]
       #   fi["https://imgur.com/" + data_imgur["image_id"]]
       else
+        # one day single-video item should hit this
         fail data_imgur.inspect
       end
     when /\/\/i\./,
@@ -51,10 +52,10 @@ module Imgur
       raise Error.new "bad link pattern #{link.inspect}"
     end.map do |_|
       case _["type"]
-      when "image/jpeg", "image/png", "image/gif"
-        _.values_at "link", "width", "height"
+      when "image/jpeg", "image/png", "image/gif", "video/mp4"
+        _.values_at "link", "width", "height", "type"
       else
-        raise Error.new "unknown type of #{_} for #{link}"
+        raise Error.new "unknown type of #{link}: #{_}"
       end
     end
   end
@@ -76,8 +77,9 @@ if $0 == __FILE__
   end
 
   [
-    ["https://imgur.com/a/Aoh6l", "https://i.imgur.com/BLCesav.jpg", 1000, 1500],
-    ["http://i.imgur.com/7xcxxkR.gifv", "http://i.imgur.com/7xcxxkRh.gif"], # gif
+    ["https://imgur.com/a/Aoh6l", "https://i.imgur.com/BLCesav.jpg", 1000, 1500, "image/jpeg"],
+    ["http://i.imgur.com/7xcxxkR.gifv", "http://i.imgur.com/7xcxxkRh.gif", 718, 404, "image/gif"],
+    ["https://imgur.com/9yaMdJq", "https://i.imgur.com/9yaMdJq.mp4", 720, 404, "video/mp4"],
     ["http://imgur.com/HQHBBBD", "https://i.imgur.com/HQHBBBD.jpg"], # http
     ["https://imgur.com/BGDh6eu", "https://i.imgur.com/BGDh6eu.jpg"], # https
     ["https://imgur.com/a/qNCOo", 6, "https://i.imgur.com/vwqfi3s.jpg", "https://i.imgur.com/CnSMWvo.jpg"], # https album
@@ -91,13 +93,13 @@ if $0 == __FILE__
     ["http://m.imgur.com/rarOohr", "https://i.imgur.com/rarOohr.jpg"],
     ["http://imgur.com/r/wallpaper/j39dKMi", "https://i.imgur.com/j39dKMi.jpg"],
     ["http://imgur.com/gallery/oZXfZ", 12, "https://i.imgur.com/t7RjRXU.jpg", "https://i.imgur.com/anlPrvS.jpg"],
-  ].each do |url, n, first = nil, last = nil|
+  ].each do |url, n, first = nil, last = nil, type = nil|
     real = Imgur::imgur_to_array url
     case last
     when NilClass
       fail [url, real].inspect unless real.size == 1 && real.first.first == n
     when Numeric
-      fail [url, real].inspect unless real.size == 1 && real.first == [n, first, last]
+      fail [url, real].inspect unless real.size == 1 && real.first == [n, first, last, type]
     when String
       fail [url, real.size].inspect unless real.size == n
       fail [url, real.first].inspect unless real.first.first == first
