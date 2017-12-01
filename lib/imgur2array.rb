@@ -22,11 +22,16 @@ module Imgur
     when /\Ahttps?:\/\/((m|i|www)\.)?imgur\.com\/(a|gallery)\/[a-zA-Z0-9]{5}(#[a-zA-Z0-9]{7})?\z/,
          /\Ahttps?:\/\/imgur\.com\/gallery\/[a-zA-Z0-9]{5}\/new\z/
       fail link.inspect unless /\/(?<type>a|gallery)\/(?<id>[a-zA-Z0-9]{5})/ =~ link
-      json = NetHTTPUtils.request_data "https://api.imgur.com/3/#{
-        # type == "gallery" ? "gallery" : "album"
-        "album"
-      }/#{id}/0.json",
-        header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
+      json = begin
+        NetHTTPUtils.request_data "https://api.imgur.com/3/#{
+          # type == "gallery" ? "gallery" : "album"
+          "album"
+        }/#{id}/0.json",
+          header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
+      rescue NetHTTPUtils::Error => e
+        fail unless e.code == 404
+        return
+      end
       data_imgur = JSON.parse(json)["data"]
       if data_imgur["error"]
         fail data_imgur.inspect
@@ -103,7 +108,9 @@ if $0 == __FILE__
     ["http://imgur.com/gallery/dCQprEq/new", "https://i.imgur.com/dCQprEq.jpg", 5760, 3840, "image/jpeg"],
     ["https://imgur.com/S5u2xRB?third_party=1#_=_", "https://i.imgur.com/S5u2xRB.jpg", 2448, 2448, "image/jpeg"],
     ["https://imgur.com/3eThW", "https://i.imgur.com/3eThW.jpg", 2560, 1600, "image/jpeg"],
-  ].each do |url, n, first = nil, last = nil, type = nil|
+    ["https://imgur.com/a/GUB13"],
+  ].each do |url, n = nil, first = nil, last = nil, type = nil|
+    next (fail if Imgur::imgur_to_array url) unless n
     real = Imgur::imgur_to_array url
     case last
     when NilClass
