@@ -48,6 +48,12 @@ module Imgur
       }/0.json",
         header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
       [ JSON.load(json)["data"] ]
+    when /\Ahttps:\/\/imgur\.com\/[a-zA-Z0-9]{5}\z/
+      json = NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
+        link[/(?<=\/)[a-zA-Z0-9]{5}\z/]
+      }/0.json",
+        header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
+      [ JSON.load(json)["data"] ]
     else
       raise Error.new "bad link pattern #{link.inspect}"
     end.map do |_|
@@ -96,6 +102,7 @@ if $0 == __FILE__
     ["http://imgur.com/gallery/oZXfZ", 12, "https://i.imgur.com/t7RjRXU.jpg", "https://i.imgur.com/anlPrvS.jpg"],
     ["http://imgur.com/gallery/dCQprEq/new", "https://i.imgur.com/dCQprEq.jpg", 5760, 3840, "image/jpeg"],
     ["https://imgur.com/S5u2xRB?third_party=1#_=_", "https://i.imgur.com/S5u2xRB.jpg", 2448, 2448, "image/jpeg"],
+    ["https://imgur.com/3eThW", "https://i.imgur.com/3eThW.jpg", 2560, 1600, "image/jpeg"],
   ].each do |url, n, first = nil, last = nil, type = nil|
     real = Imgur::imgur_to_array url
     case last
