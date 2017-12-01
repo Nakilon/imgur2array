@@ -42,9 +42,9 @@ module Imgur
         fail data_imgur.inspect
       end
     when /\/\/i\./,
-         /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{7}(\?r|\/new|\.jpg|\.gifv)?\z/
+         /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{7}(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv)?\z/
       json = NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
-        link[/(?<=\/)[a-zA-Z0-9]{7}(?=(\?r|\/new|\.jpg|\.gifv)?\z)/]
+        link[/(?<=\/)[a-zA-Z0-9]{7}(?=(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv)?\z)/]
       }/0.json",
         header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
       [ JSON.load(json)["data"] ]
@@ -94,6 +94,8 @@ if $0 == __FILE__
     ["http://m.imgur.com/rarOohr", "https://i.imgur.com/rarOohr.jpg"],
     ["http://imgur.com/r/wallpaper/j39dKMi", "https://i.imgur.com/j39dKMi.jpg"],
     ["http://imgur.com/gallery/oZXfZ", 12, "https://i.imgur.com/t7RjRXU.jpg", "https://i.imgur.com/anlPrvS.jpg"],
+    ["http://imgur.com/gallery/dCQprEq/new", "https://i.imgur.com/dCQprEq.jpg", 5760, 3840, "image/jpeg"],
+    ["https://imgur.com/S5u2xRB?third_party=1#_=_", "https://i.imgur.com/S5u2xRB.jpg", 2448, 2448, "image/jpeg"],
   ].each do |url, n, first = nil, last = nil, type = nil|
     real = Imgur::imgur_to_array url
     case last
