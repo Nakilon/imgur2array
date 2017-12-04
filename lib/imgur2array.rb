@@ -47,9 +47,9 @@ module Imgur
         fail data_imgur.inspect
       end
     when /\/\/i\./,
-         /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{7}(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv)?\z/
+         /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{7}(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv|\.mp4)?\z/
       json = NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
-        link[/(?<=\/)[a-zA-Z0-9]{7}(?=(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv)?\z)/]
+        link[/(?<=\/)[a-zA-Z0-9]{7}(?=(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv|\.mp4)?\z)/] || fail(link)
       }/0.json",
         header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
       [ JSON.load(json)["data"] ]
