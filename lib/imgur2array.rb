@@ -53,11 +53,11 @@ module Imgur
           link[/(?<=\/)[a-zA-Z0-9]{7}(?=(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv|\.mp4)?\z)/] || fail(link)
         }/0.json",
           header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
-        [ JSON.load(json)["data"] ]
       rescue NetHTTPUtils::Error => e
         fail unless e.code == 404
         return
       end
+      [ JSON.load(json)["data"] ]
     when /\Ahttps:\/\/imgur\.com\/[a-zA-Z0-9]{5}\z/
       json = NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
         link[/(?<=\/)[a-zA-Z0-9]{5}\z/]
