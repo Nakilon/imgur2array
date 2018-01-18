@@ -1,20 +1,22 @@
 GIT
   remote: git@github.com:Nakilon/nethttputils.git
-  revision: 6c5d1615ddb2a70b6edc897241abd9e63aebaa20
-  tag: v0.0.7.0
+  revision: 33e9698fe25fa14c826a950e716337b292dca409
+  tag: v0.0.7.1
   specs:
-    nethttputils (0.0.7.0)
+    nethttputils (0.0.7.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
     json (2.1.0)
+    minitest (5.11.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   json
+  minitest
   nethttputils!
 
 BUNDLED WITH

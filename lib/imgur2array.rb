@@ -1,3 +1,6 @@
+# v = Gem.loaded_specs["nethttputils"].version
+# raise Gem::DependencyError, "expecting nethttputils version #{v} ~> 0.0.7.1" unless Gem::Requirement::OPS["~>"].call v, Gem::Version.create("0.0.7.0")
+
 module Imgur
   class << self
     attr_accessor :logger
@@ -59,6 +62,7 @@ module Imgur
       end
       [ JSON.load(json)["data"] ]
     when /\Ahttps:\/\/imgur\.com\/[a-zA-Z0-9]{5}\z/
+      # TODO rescue like in two places above?
       json = NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
         link[/(?<=\/)[a-zA-Z0-9]{5}\z/]
       }/0.json",
@@ -89,8 +93,21 @@ if $0 == __FILE__
     begin
       fail Imgur::imgur_to_array url
     rescue Imgur::Error => e
-      raise unless e.to_s.start_with? "Imgur error: bad link pattern"
+      raise unless e.to_s.start_with? "Imgur error: bad link pattern \""
     end
+  end
+
+  require "minitest/mock"
+  VALID_IMGUR_IMAGE_URL = "https://i.imgur.com/BLCesav.jpg"
+  fail unless [["https://i.imgur.com/BLCesav.jpg", 1000, 1500, "image/jpeg"]] == Imgur::imgur_to_array(VALID_IMGUR_IMAGE_URL)
+  fail unless nil == (( NetHTTPUtils.stub :request_data, ->*{ raise NetHTTPUtils::Error.new "", 404 } do
+    Imgur::imgur_to_array VALID_IMGUR_IMAGE_URL
+  end ))
+  begin
+    fail (( NetHTTPUtils.stub :request_data, ->*{ raise NetHTTPUtils::Error.new "", 400 } do
+      Imgur::imgur_to_array VALID_IMGUR_IMAGE_URL
+    end ))
+  rescue NetHTTPUtils::Error
   end
 
   [
@@ -114,8 +131,6 @@ if $0 == __FILE__
     ["http://imgur.com/gallery/dCQprEq/new", "https://i.imgur.com/dCQprEq.jpg", 5760, 3840, "image/jpeg"],
     ["https://imgur.com/S5u2xRB?third_party=1#_=_", "https://i.imgur.com/S5u2xRB.jpg", 2448, 2448, "image/jpeg"],
     ["https://imgur.com/3eThW", "https://i.imgur.com/3eThW.jpg", 2560, 1600, "image/jpeg"],
-    ["https://imgur.com/a/ccccc"], # 404 album
-    ["https://imgur.com/mM4Dh7Z"], # 404 image
   ].each do |url, n = nil, first = nil, last = nil, type = nil|
     next (fail if Imgur::imgur_to_array url) unless n
     real = Imgur::imgur_to_array url
