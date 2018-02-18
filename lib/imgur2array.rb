@@ -25,6 +25,7 @@ module Imgur
     when /\Ahttps?:\/\/((m|i|www)\.)?imgur\.com\/(a|gallery)\/[a-zA-Z0-9]{5}(#[a-zA-Z0-9]{2})?\z/,
          /\Ahttps?:\/\/imgur\.com\/gallery\/[a-zA-Z0-9]{5}\/new\z/
       fail link.inspect unless /\/(?<type>a|gallery)\/(?<id>[a-zA-Z0-9]{5})/ =~ link
+      timeout = 1
       json = begin
         NetHTTPUtils.request_data "https://api.imgur.com/3/#{
           # type == "gallery" ? "gallery" : "album"
@@ -32,8 +33,14 @@ module Imgur
         }/#{id}/0.json",
           header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
       rescue NetHTTPUtils::Error => e
-        fail unless e.code == 404
-        return
+        case e.code
+        when 404 ; return
+        when 500
+          logger.error "sleeping #{timeout} seconds because of Imgur HTTP error #500"
+          sleep timeout
+          timeout *= 2
+          retry
+        end
       end
       data_imgur = JSON.parse(json)["data"]
       if data_imgur["error"]
