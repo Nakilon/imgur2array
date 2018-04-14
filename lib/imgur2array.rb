@@ -60,7 +60,7 @@ module Imgur
          /\Ahttps?:\/\/((m|www)\.)?imgur\.com\/(gallery\/|r\/[A-Za-z0-9][A-Za-z0-9_]{2,20}\/)?[a-zA-Z0-9]{5}([a-zA-Z0-9]{2})?(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv|\.mp4)?\z/
       json = begin
         NetHTTPUtils.request_data "https://api.imgur.com/3/image/#{
-          link[/(?<=\/)[a-zA-Z0-9]{5}([a-zA-Z0-9]{2})?(?=(\?r|\?third_party=1#_=_|\/new|\.jpg|\.gifv|\.mp4)?\z)/] || fail(link)
+          link[/(?<=\/)[a-zA-Z0-9]{5}([a-zA-Z0-9]{2})?(?=(\?r|\?third_party=1#_=_|\/new|\.(?:jpg|gifv|mp4|png))?\z)/] || fail(link)
         }/0.json",
           header: { Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}" }
       rescue NetHTTPUtils::Error => e
